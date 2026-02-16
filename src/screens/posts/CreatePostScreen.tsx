@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { Activity, ArrowLeft, FileText, Layout, Lock, Send, Tags } from 'lucide-react-native';
+import { Activity, ArrowLeft, BookOpen, FileText, Layout, Lock, Send, Tags } from 'lucide-react-native';
 import React, { useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -16,6 +16,7 @@ import { PostService } from '../../services/postService';
 
 export default function CreatePostScreen() {
     const [title, setTitle] = useState('');
+    const [category, setCategory] = useState('');
     const [content, setContent] = useState('');
     const [tagsStr, setTagsStr] = useState('');
     const [status, setStatus] = useState<'published' | 'draft' | 'private'>('published');
@@ -30,8 +31,8 @@ export default function CreatePostScreen() {
     }, [navigation]);
 
     async function handleCreatePost() {
-        if (!title || !content) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
+        if (!title || !content || !category) {
+            Alert.alert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).');
             return;
         }
 
@@ -43,6 +44,7 @@ export default function CreatePostScreen() {
             await PostService.createPost({
                 title,
                 content,
+                category,
                 tags,
                 published: status === 'published',
                 status: status
@@ -72,7 +74,7 @@ export default function CreatePostScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.form}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Título da Matéria</Text>
+                        <Text style={styles.label}>Título</Text>
                         <View style={styles.inputWrapper}>
                             <Layout size={20} color="#F97316" />
                             <TextInput
@@ -80,6 +82,20 @@ export default function CreatePostScreen() {
                                 placeholder="Ex: A importância da Literatura"
                                 value={title}
                                 onChangeText={setTitle}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Disciplina</Text>
+                        <View style={styles.inputWrapper}>
+                            <BookOpen size={20} color="#F97316" />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Português, Matemática, História..."
+                                value={category}
+                                onChangeText={setCategory}
                                 placeholderTextColor="#999"
                             />
                         </View>

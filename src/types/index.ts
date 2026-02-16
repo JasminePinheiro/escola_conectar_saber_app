@@ -15,6 +15,7 @@ export interface Post {
     title: string;
     content: string;
     author: string;
+    category: string;
     tags: string[];
     published: boolean;
     status: 'draft' | 'published' | 'scheduled' | 'private';

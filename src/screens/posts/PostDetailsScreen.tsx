@@ -80,6 +80,11 @@ export default function PostDetailsScreen() {
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>{post.title}</Text>
+
+            <View style={styles.categoryBadge}>
+                <Text style={styles.categoryText}>{post.category}</Text>
+            </View>
+
             <Text style={styles.meta}>Por {post.author} em {new Date(post.createdAt).toLocaleDateString('pt-BR')}</Text>
 
             <View style={styles.tags}>
@@ -109,6 +114,22 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#888',
         marginBottom: 16,
+    },
+    categoryBadge: {
+        backgroundColor: '#FFF4ED',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#F97316',
+    },
+    categoryText: {
+        color: '#F97316',
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
     },
     tags: {
         flexDirection: 'row',

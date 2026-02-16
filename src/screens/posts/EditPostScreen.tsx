@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { Activity, ArrowLeft, FileText, Layout, Lock, Save, Tags } from 'lucide-react-native';
+import { Activity, ArrowLeft, BookOpen, FileText, Layout, Lock, Save, Tags } from 'lucide-react-native';
 import React, { useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -25,6 +25,7 @@ export default function EditPostScreen() {
     const navigation = useNavigation<any>();
 
     const [title, setTitle] = useState(post.title);
+    const [category, setCategory] = useState(post.category || '');
     const [content, setContent] = useState(post.content);
     const [tagsStr, setTagsStr] = useState(post.tags ? post.tags.join(', ') : '');
     const [status, setStatus] = useState<'published' | 'draft' | 'scheduled' | 'private'>(post.status || 'published');
@@ -38,8 +39,8 @@ export default function EditPostScreen() {
     }, [navigation]);
 
     async function handleUpdatePost() {
-        if (!title || !content) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios.');
+        if (!title || !content || !category) {
+            Alert.alert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).');
             return;
         }
 
@@ -50,6 +51,7 @@ export default function EditPostScreen() {
             await PostService.updatePost(post.id, {
                 title,
                 content,
+                category,
                 tags,
                 published: status === 'published',
                 status: status as any
@@ -79,7 +81,7 @@ export default function EditPostScreen() {
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={styles.form}>
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Título da Matéria</Text>
+                        <Text style={styles.label}>Título</Text>
                         <View style={styles.inputWrapper}>
                             <Layout size={20} color="#F97316" />
                             <TextInput
@@ -87,6 +89,20 @@ export default function EditPostScreen() {
                                 placeholder="Ex: A importância da Literatura"
                                 value={title}
                                 onChangeText={setTitle}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Disciplina</Text>
+                        <View style={styles.inputWrapper}>
+                            <BookOpen size={20} color="#F97316" />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Português, Matemática, História..."
+                                value={category}
+                                onChangeText={setCategory}
                                 placeholderTextColor="#999"
                             />
                         </View>
