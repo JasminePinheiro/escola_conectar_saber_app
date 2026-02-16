@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     tagBadge: {
-        backgroundColor: '#FFF4ED',
+        backgroundColor: '#EFF6FF',
         alignSelf: 'flex-start',
         paddingHorizontal: 12,
         paddingVertical: 4,
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     tagText: {
-        color: '#F97316',
+        color: '#2563EB',
         fontSize: 12,
         fontWeight: 'bold',
     },
@@ -610,11 +610,15 @@ const styles = StyleSheet.create({
         color: '#EF4444',
     },
     postCategoryBadge: {
+        backgroundColor: '#F3E8FF',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
         alignSelf: 'flex-start',
         marginBottom: 8,
     },
     postCategoryText: {
-        color: '#F97316',
+        color: '#7E22CE',
         fontSize: 10,
         fontWeight: 'bold',
         textTransform: 'uppercase',

@@ -1,6 +1,8 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ArrowLeft } from 'lucide-react-native';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/CustomAlert';
 import { useAuth } from '../../context/AuthContext';
 import { PostService } from '../../services/postService';
@@ -34,6 +36,13 @@ export default function PostDetailsScreen() {
     const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
         setAlert({ visible: true, title, message, type, onConfirm });
     };
+
+    // Hide navigator header
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerShown: false,
+        });
+    }, [navigation]);
 
     useEffect(() => {
         loadPost();
@@ -89,42 +98,72 @@ export default function PostDetailsScreen() {
     const canEdit = user?.role === 'admin' || user?.role === 'teacher'; // Simplified check, ideally check author too if strict
 
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.title}>{post.title}</Text>
-
-            {post.category ? (
-                <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryText}>{post.category}</Text>
+        <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+            <SafeAreaView edges={['top']} style={styles.header}>
+                <View style={styles.headerContent}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <ArrowLeft size={24} color="#FFF" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Detalhes do Post</Text>
                 </View>
-            ) : null}
+            </SafeAreaView>
 
-            <Text style={styles.meta}>Por {post.author} em {new Date(post.createdAt).toLocaleDateString('pt-BR')}</Text>
+            <ScrollView style={styles.container}>
+                <Text style={styles.title}>{post.title}</Text>
 
-            <View style={styles.tags}>
-                {post.tags?.map((tag, i) => (
-                    <Text key={i} style={styles.tag}>#{tag}</Text>
-                ))}
-            </View>
+                {post.category ? (
+                    <View style={styles.categoryBadge}>
+                        <Text style={styles.categoryText}>{post.category}</Text>
+                    </View>
+                ) : null}
 
-            <Text style={styles.content}>{post.content}</Text>
+                <Text style={styles.meta}>Por {post.author} em {new Date(post.createdAt).toLocaleDateString('pt-BR')}</Text>
 
-            <CustomAlert
-                visible={alert.visible}
-                title={alert.title}
-                message={alert.message}
-                type={alert.type}
-                onClose={() => setAlert({ ...alert, visible: false })}
-                onConfirm={alert.onConfirm}
-            />
-        </ScrollView>
+                <View style={styles.tags}>
+                    {post.tags?.map((tag, i) => (
+                        <Text key={i} style={styles.tag}>#{tag}</Text>
+                    ))}
+                </View>
+
+                <Text style={styles.content}>{post.content}</Text>
+
+                <CustomAlert
+                    visible={alert.visible}
+                    title={alert.title}
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={() => setAlert({ ...alert, visible: false })}
+                    onConfirm={alert.onConfirm}
+                />
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 20,
         backgroundColor: '#FFF',
+    },
+    header: {
+        backgroundColor: '#F97316',
+        paddingHorizontal: 20,
+        paddingBottom: 15,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    backButton: {
+        padding: 5,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFF',
+        marginLeft: 8,
     },
     title: {
         fontSize: 24,
@@ -138,11 +177,15 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     categoryBadge: {
+        backgroundColor: '#F3E8FF',
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 6,
         alignSelf: 'flex-start',
         marginBottom: 12,
     },
     categoryText: {
-        color: '#F97316',
+        color: '#7E22CE',
         fontSize: 12,
         fontWeight: 'bold',
         textTransform: 'uppercase',
@@ -153,7 +196,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     tag: {
-        color: '#F97316',
+        color: '#2563EB',
         marginRight: 10,
         fontWeight: '500',
     },
