@@ -5,6 +5,7 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -13,14 +14,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/CustomAlert';
-import { useAuth } from '../../context/AuthContext';
+import { AuthService } from '../../services/authService';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
     const navigation = useNavigation<any>();
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { signIn, loading } = useAuth();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [role, setRole] = useState<'student' | 'teacher' | 'admin'>('student');
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const [alert, setAlert] = useState<{
@@ -40,23 +43,35 @@ export default function LoginScreen() {
         setAlert({ visible: true, title, message, type, onConfirm });
     };
 
-    async function handleLogin() {
-        if (!email || !password) {
-            showAlert('Erro', 'Por favor preencha todos os campos.', 'error');
+    const handleRegister = async () => {
+        if (!name || !email || !password || !confirmPassword) {
+            showAlert('Erro', 'Preencha todos os campos.', 'error');
             return;
         }
 
-        setIsSubmitting(true);
-        try {
-            await signIn(email, password);
-        } catch (error: any) {
-            const msg = error.response?.data?.message || 'Login ou senha incorretos.';
-            showAlert('Erro no login', msg, 'error');
-            console.error(error);
-        } finally {
-            setIsSubmitting(false);
+        if (password !== confirmPassword) {
+            showAlert('Erro', 'As senhas não coincidem.', 'error');
+            return;
         }
-    }
+
+        if (password.length < 6) {
+            showAlert('Erro', 'A senha deve ter pelo menos 6 caracteres.', 'error');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await AuthService.register(name, email, password, role);
+            showAlert('Sucesso', 'Conta criada com sucesso!', 'success', () => {
+                navigation.navigate('Login');
+            });
+        } catch (error: any) {
+            const msg = error.response?.data?.message || 'Não foi possível criar a conta. Tente novamente.';
+            showAlert('Erro', msg, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -70,10 +85,20 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.content}>
-                    <Text style={styles.title}>Login</Text>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                    <Text style={styles.title}>Cadastre-se</Text>
 
                     <View style={styles.form}>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Nome</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Seu nome completo"
+                                value={name}
+                                onChangeText={setName}
+                            />
+                        </View>
+
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>E-mail</Text>
                             <TextInput
@@ -84,6 +109,29 @@ export default function LoginScreen() {
                                 autoCapitalize="none"
                                 keyboardType="email-address"
                             />
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Tipo de conta</Text>
+                            <View style={styles.roleContainer}>
+                                {(['student', 'teacher'] as const).map((r) => (
+                                    <TouchableOpacity
+                                        key={r}
+                                        style={[
+                                            styles.roleButton,
+                                            role === r && styles.roleButtonActive
+                                        ]}
+                                        onPress={() => setRole(r)}
+                                    >
+                                        <Text style={[
+                                            styles.roleButtonText,
+                                            role === r && styles.roleButtonTextActive
+                                        ]}>
+                                            {r === 'student' ? 'Estudante' : 'Professor'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
 
                         <View style={styles.inputGroup}>
@@ -100,36 +148,41 @@ export default function LoginScreen() {
                                     {showPassword ? <EyeOff size={20} color="#999" /> : <Eye size={20} color="#999" />}
                                 </TouchableOpacity>
                             </View>
-                            <TouchableOpacity style={styles.forgotPassword}>
-                                <Text style={styles.forgotPasswordText}>Esqueci a senha</Text>
-                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Confirmar Senha</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="••••••••"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                secureTextEntry={!showPassword}
+                            />
                         </View>
 
                         <TouchableOpacity
-                            style={[styles.loginButton, (isSubmitting || loading) && styles.buttonDisabled]}
-                            onPress={handleLogin}
-                            disabled={isSubmitting || loading}
+                            style={[styles.registerButton, loading && styles.buttonDisabled]}
+                            onPress={handleRegister}
+                            disabled={loading}
                         >
-                            {isSubmitting ? (
+                            {loading ? (
                                 <ActivityIndicator color="#FFF" />
                             ) : (
-                                <Text style={styles.loginButtonText}>Entrar</Text>
+                                <Text style={styles.registerButtonText}>Cadastrar</Text>
                             )}
                         </TouchableOpacity>
 
-                        <View style={styles.footer}>
-                            <View style={styles.divider} />
-                            <TouchableOpacity
-                                style={styles.registerLink}
-                                onPress={() => navigation.navigate('Register')}
-                            >
-                                <Text style={styles.registerLinkText}>
-                                    Não tem uma conta? <Text style={styles.registerLinkHighlight}>Cadastre-se</Text>
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            style={styles.loginLink}
+                            onPress={() => navigation.navigate('Login')}
+                        >
+                            <Text style={styles.loginLinkText}>
+                                Já tem uma conta? <Text style={styles.loginLinkHighlight}>Faça Login</Text>
+                            </Text>
+                        </TouchableOpacity>
                     </View>
-                </View>
+                </ScrollView>
             </KeyboardAvoidingView>
 
             <CustomAlert
@@ -156,23 +209,22 @@ const styles = StyleSheet.create({
     backButton: {
         padding: 5,
     },
-    content: {
-        flex: 1,
+    scrollContent: {
         paddingHorizontal: 30,
-        justifyContent: 'center',
+        paddingBottom: 40,
     },
     title: {
         fontSize: 32,
         fontWeight: 'bold',
         color: '#333',
-        marginBottom: 40,
+        marginBottom: 30,
         textAlign: 'center',
     },
     form: {
         width: '100%',
     },
     inputGroup: {
-        marginBottom: 25,
+        marginBottom: 20,
     },
     label: {
         fontSize: 14,
@@ -204,16 +256,32 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
-    forgotPassword: {
-        alignSelf: 'flex-end',
-        marginTop: 10,
+    roleContainer: {
+        flexDirection: 'row',
+        gap: 10,
     },
-    forgotPasswordText: {
-        color: '#F97316',
+    roleButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+    },
+    roleButtonActive: {
+        borderColor: '#F97316',
+        backgroundColor: '#FFF4ED',
+    },
+    roleButtonText: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '600',
+        color: '#666',
     },
-    loginButton: {
+    roleButtonTextActive: {
+        color: '#F97316',
+    },
+    registerButton: {
         backgroundColor: '#F97316',
         paddingVertical: 16,
         borderRadius: 12,
@@ -228,29 +296,20 @@ const styles = StyleSheet.create({
     buttonDisabled: {
         opacity: 0.7,
     },
-    loginButtonText: {
+    registerButtonText: {
         color: '#FFF',
         fontSize: 18,
         fontWeight: 'bold',
     },
-    footer: {
-        marginTop: 40,
+    loginLink: {
+        marginTop: 25,
         alignItems: 'center',
     },
-    divider: {
-        width: '100%',
-        height: 1,
-        backgroundColor: '#E9ECEF',
-        marginBottom: 20,
-    },
-    registerLink: {
-        marginTop: 5,
-    },
-    registerLinkText: {
+    loginLinkText: {
         fontSize: 14,
         color: '#666',
     },
-    registerLinkHighlight: {
+    loginLinkHighlight: {
         color: '#F97316',
         fontWeight: 'bold',
     },

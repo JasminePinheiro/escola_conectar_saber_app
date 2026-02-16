@@ -4,11 +4,12 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Image,
     RefreshControl,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/CustomAlert';
@@ -83,7 +84,11 @@ export default function StudentListScreen() {
     const renderStudent = ({ item }: { item: User }) => (
         <View style={styles.card}>
             <View style={styles.avatar}>
-                <UserIcon size={24} color="#F97316" />
+                {item.avatarUrl ? (
+                    <Image source={{ uri: item.avatarUrl }} style={styles.avatarImage} />
+                ) : (
+                    <UserIcon size={24} color="#F97316" />
+                )}
             </View>
             <View style={styles.info}>
                 <Text style={styles.name}>{item.name}</Text>
@@ -219,6 +224,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 15,
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
     },
     info: {
         flex: 1,
