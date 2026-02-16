@@ -1,8 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, ChevronRight, FileText, GraduationCap, Users } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { useAuth } from '../../context/AuthContext';
 import { AuthService } from '../../services/authService';
 import { PostService } from '../../services/postService';
@@ -28,6 +29,23 @@ export default function AdminDashboardScreen() {
     const [counts, setCounts] = useState({ posts: 0, teachers: 0, students: 0 });
     const [loading, setLoading] = useState(true);
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     const loadData = async () => {
         try {
             setLoading(true);
@@ -44,9 +62,9 @@ export default function AdminDashboardScreen() {
         } catch (error: any) {
             console.error('Erro ao carregar dados do dashboard:', error);
             if (error.response?.status === 401) {
-                Alert.alert('Sessão Expirada', 'Sua sessão expirou. Por favor, faça login novamente.');
+                showAlert('Sessão Expirada', 'Sua sessão expirou. Por favor, faça login novamente.', 'error');
             } else {
-                Alert.alert('Erro', 'Não foi possível carregar os dados do dashboard.');
+                showAlert('Erro', 'Não foi possível carregar os dados do dashboard.', 'error');
             }
         } finally {
             setLoading(false);
@@ -112,6 +130,15 @@ export default function AdminDashboardScreen() {
                     loading={loading}
                 />
             </View>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }

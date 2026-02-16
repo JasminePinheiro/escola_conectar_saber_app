@@ -13,7 +13,6 @@ import {
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -26,6 +25,7 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { useAuth } from '../../context/AuthContext';
 import { AuthService } from '../../services/authService';
 
@@ -45,6 +45,24 @@ export default function ProfileScreen() {
     const [newPassword, setNewPassword] = useState('');
     const [passLoading, setPassLoading] = useState(false);
 
+    // Custom Alert State
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     useEffect(() => {
         if (user) {
             setName(user.name);
@@ -58,7 +76,7 @@ export default function ProfileScreen() {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
             if (status !== 'granted') {
-                Alert.alert('Permissão necessária', 'Precisamos de acesso às suas fotos para mudar o avatar.');
+                showAlert('Permissão necessária', 'Precisamos de acesso às suas fotos para mudar o avatar.', 'error');
                 return;
             }
 
@@ -76,10 +94,10 @@ export default function ProfileScreen() {
 
                 setUploading(true);
                 await updateProfile({ avatarUrl: base64Image });
-                Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+                showAlert('Sucesso', 'Foto de perfil atualizada!', 'success');
             }
         } catch (error) {
-            Alert.alert('Erro', 'Não foi possível selecionar ou salvar a imagem.');
+            showAlert('Erro', 'Não foi possível selecionar ou salvar a imagem.', 'error');
             console.error(error);
         } finally {
             setUploading(false);
@@ -87,44 +105,38 @@ export default function ProfileScreen() {
     };
 
     const removePhoto = async () => {
-        Alert.alert(
+        showAlert(
             'Remover Foto',
             'Tem certeza que deseja remover sua foto de perfil?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Remover',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            setUploading(true);
-                            await updateProfile({ avatarUrl: '' });
-                            setAvatarUrl('');
-                            Alert.alert('Sucesso', 'Foto removida!');
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível remover a foto.');
-                        } finally {
-                            setUploading(false);
-                        }
-                    }
+            'confirm',
+            async () => {
+                try {
+                    setUploading(true);
+                    await updateProfile({ avatarUrl: '' });
+                    setAvatarUrl('');
+                    showAlert('Sucesso', 'Foto removida!', 'success');
+                } catch (error) {
+                    showAlert('Erro', 'Não foi possível remover a foto.', 'error');
+                } finally {
+                    setUploading(false);
                 }
-            ]
+            }
         );
     };
 
     const handleSave = async () => {
         if (!user) return;
         if (!name || !email) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+            showAlert('Erro', 'Por favor, preencha todos os campos.', 'error');
             return;
         }
 
         try {
             setLoading(true);
             await updateProfile({ name, email, avatarUrl });
-            Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+            showAlert('Sucesso', 'Perfil atualizado com sucesso!', 'success');
         } catch (error) {
-            Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
+            showAlert('Erro', 'Não foi possível atualizar o perfil.', 'error');
         } finally {
             setLoading(false);
         }
@@ -132,61 +144,53 @@ export default function ProfileScreen() {
 
     const handleResetPassword = async () => {
         if (!currentPassword || !newPassword) {
-            Alert.alert('Erro', 'Preencha as senhas atual e nova.');
+            showAlert('Erro', 'Preencha as senhas atual e nova.', 'error');
             return;
         }
 
         if (newPassword.length < 6) {
-            Alert.alert('Erro', 'A nova senha deve ter pelo menos 6 caracteres.');
+            showAlert('Erro', 'A nova senha deve ter pelo menos 6 caracteres.', 'error');
             return;
         }
 
         try {
             setPassLoading(true);
             await AuthService.changePassword(currentPassword, newPassword);
-            Alert.alert('Sucesso', 'Senha alterada com sucesso!');
+            showAlert('Sucesso', 'Senha alterada com sucesso!', 'success');
             setIsPassModalVisible(false);
             setCurrentPassword('');
             setNewPassword('');
         } catch (error: any) {
             const msg = error.response?.data?.message || 'Não foi possível alterar a senha. Verifique se a senha atual está correta.';
-            Alert.alert('Erro', msg);
+            showAlert('Erro', msg, 'error');
         } finally {
             setPassLoading(false);
         }
     };
 
     const handleDeleteAccount = () => {
-        Alert.alert(
+        showAlert(
             'Excluir Conta',
             'Esta ação é IRREVERSÍVEL. Todos os seus dados serão apagados. Tem certeza?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'EXCLUIR',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            setLoading(true);
-                            await deleteAccount();
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível excluir a conta.');
-                            setLoading(false);
-                        }
-                    }
+            'confirm',
+            async () => {
+                try {
+                    setLoading(true);
+                    await deleteAccount();
+                } catch (error) {
+                    showAlert('Erro', 'Não foi possível excluir a conta.', 'error');
+                    setLoading(false);
                 }
-            ]
+            }
         );
     };
 
     const handleLogout = () => {
-        Alert.alert(
+        showAlert(
             'Sair',
             'Tem certeza que deseja sair da sua conta?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Sair', style: 'destructive', onPress: signOut }
-            ]
+            'confirm',
+            signOut
         );
     };
 
@@ -358,6 +362,15 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </Modal>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }

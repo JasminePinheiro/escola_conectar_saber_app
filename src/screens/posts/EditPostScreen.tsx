@@ -3,15 +3,15 @@ import { Activity, ArrowLeft, BookOpen, FileText, Layout, Lock, Save, Tags } fro
 import React, { useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { PostService } from '../../services/postService';
 import { Post } from '../../types';
 
@@ -31,6 +31,23 @@ export default function EditPostScreen() {
     const [status, setStatus] = useState<'published' | 'draft' | 'scheduled' | 'private'>(post.status || 'published');
     const [loading, setLoading] = useState(false);
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     // Hide navigator header to avoid double header
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -40,7 +57,7 @@ export default function EditPostScreen() {
 
     async function handleUpdatePost() {
         if (!title || !content || !category) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).');
+            showAlert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).', 'error');
             return;
         }
 
@@ -56,12 +73,10 @@ export default function EditPostScreen() {
                 published: status === 'published',
                 status: status as any
             });
-            Alert.alert('Sucesso', 'Postagem atualizada com sucesso!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            showAlert('Sucesso', 'Postagem atualizada com sucesso!', 'success', () => navigation.goBack());
         } catch (error) {
             console.error(error);
-            Alert.alert('Erro', 'Não foi possível atualizar a postagem.');
+            showAlert('Erro', 'Não foi possível atualizar a postagem.', 'error');
         } finally {
             setLoading(false);
         }
@@ -181,6 +196,15 @@ export default function EditPostScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }

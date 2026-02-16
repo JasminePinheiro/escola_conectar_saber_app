@@ -3,15 +3,15 @@ import { ArrowLeft, Edit2, Plus, Trash2, User as UserIcon } from 'lucide-react-n
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     FlatList,
     RefreshControl,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { AuthService } from '../../services/authService';
 import { User } from '../../types';
 
@@ -21,6 +21,23 @@ export default function StudentListScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation<any>();
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     const loadStudents = async () => {
         try {
             setLoading(true);
@@ -28,7 +45,7 @@ export default function StudentListScreen() {
             setStudents(data);
         } catch (error) {
             console.error('Erro ao carregar alunos:', error);
-            Alert.alert('Erro', 'Não foi possível carregar a lista de alunos.');
+            showAlert('Erro', 'Não foi possível carregar a lista de alunos.', 'error');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -48,24 +65,18 @@ export default function StudentListScreen() {
     };
 
     const handleDelete = (id: string, name: string) => {
-        Alert.alert(
+        showAlert(
             'Excluir Aluno',
             `Tem certeza que deseja excluir o aluno ${name}?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Excluir',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await AuthService.deleteUser(id);
-                            loadStudents();
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível excluir o aluno.');
-                        }
-                    },
-                },
-            ]
+            'confirm',
+            async () => {
+                try {
+                    await AuthService.deleteUser(id);
+                    loadStudents();
+                } catch (error) {
+                    showAlert('Erro', 'Não foi possível excluir o aluno.', 'error');
+                }
+            }
         );
     };
 
@@ -130,6 +141,15 @@ export default function StudentListScreen() {
             >
                 <Plus size={30} color="#FFF" />
             </TouchableOpacity>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }

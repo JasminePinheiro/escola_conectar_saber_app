@@ -178,9 +178,11 @@ export default function PostListScreen() {
         >
             <Text style={styles.postTitle}>{item.title}</Text>
 
-            <View style={styles.postCategoryBadge}>
-                <Text style={styles.postCategoryText}>{item.category}</Text>
-            </View>
+            {item.category ? (
+                <View style={styles.postCategoryBadge}>
+                    <Text style={styles.postCategoryText}>{item.category}</Text>
+                </View>
+            ) : null}
 
             <Text style={styles.postDescription} numberOfLines={4}>
                 {item.content}
@@ -608,14 +610,8 @@ const styles = StyleSheet.create({
         color: '#EF4444',
     },
     postCategoryBadge: {
-        backgroundColor: '#FFF4ED',
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-        borderRadius: 6,
         alignSelf: 'flex-start',
         marginBottom: 8,
-        borderWidth: 1,
-        borderColor: '#F97316',
     },
     postCategoryText: {
         color: '#F97316',

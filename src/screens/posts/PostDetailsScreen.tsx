@@ -1,6 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import CustomAlert from '../../components/CustomAlert';
 import { useAuth } from '../../context/AuthContext';
 import { PostService } from '../../services/postService';
 import { Post } from '../../types';
@@ -15,7 +16,24 @@ export default function PostDetailsScreen() {
     const [post, setPost] = useState<Post | null>(null);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
+
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
 
     useEffect(() => {
         loadPost();
@@ -41,25 +59,18 @@ export default function PostDetailsScreen() {
     }
 
     async function handleDelete() {
-        Alert.alert(
+        showAlert(
             'Excluir Post',
             'Tem certeza que deseja excluir este post?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Excluir',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await PostService.deletePost(postId);
-                            Alert.alert('Sucesso', 'Post excluído.');
-                            navigation.goBack();
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível excluir o post.');
-                        }
-                    }
+            'confirm',
+            async () => {
+                try {
+                    await PostService.deletePost(postId);
+                    showAlert('Sucesso', 'Post excluído.', 'success', () => navigation.goBack());
+                } catch (error) {
+                    showAlert('Erro', 'Não foi possível excluir o post.', 'error');
                 }
-            ]
+            }
         );
     }
 
@@ -81,9 +92,11 @@ export default function PostDetailsScreen() {
         <ScrollView style={styles.container}>
             <Text style={styles.title}>{post.title}</Text>
 
-            <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>{post.category}</Text>
-            </View>
+            {post.category ? (
+                <View style={styles.categoryBadge}>
+                    <Text style={styles.categoryText}>{post.category}</Text>
+                </View>
+            ) : null}
 
             <Text style={styles.meta}>Por {post.author} em {new Date(post.createdAt).toLocaleDateString('pt-BR')}</Text>
 
@@ -94,6 +107,15 @@ export default function PostDetailsScreen() {
             </View>
 
             <Text style={styles.content}>{post.content}</Text>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </ScrollView>
     );
 }
@@ -116,14 +138,8 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     categoryBadge: {
-        backgroundColor: '#FFF4ED',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 8,
         alignSelf: 'flex-start',
         marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#F97316',
     },
     categoryText: {
         color: '#F97316',

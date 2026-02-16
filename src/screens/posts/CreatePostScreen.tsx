@@ -3,15 +3,15 @@ import { Activity, ArrowLeft, BookOpen, FileText, Layout, Lock, Send, Tags } fro
 import React, { useLayoutEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { PostService } from '../../services/postService';
 
 export default function CreatePostScreen() {
@@ -23,6 +23,23 @@ export default function CreatePostScreen() {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation<any>();
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     // Hide navigator header to avoid double header
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -32,7 +49,7 @@ export default function CreatePostScreen() {
 
     async function handleCreatePost() {
         if (!title || !content || !category) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).');
+            showAlert('Erro', 'Preencha todos os campos obrigatórios (Título, Disciplina e Conteúdo).', 'error');
             return;
         }
 
@@ -49,12 +66,10 @@ export default function CreatePostScreen() {
                 published: status === 'published',
                 status: status
             });
-            Alert.alert('Sucesso', 'Postagem publicada com sucesso!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            showAlert('Sucesso', 'Postagem publicada com sucesso!', 'success', () => navigation.goBack());
         } catch (error) {
             console.error(error);
-            Alert.alert('Erro', 'Não foi possível publicar. Tente novamente.');
+            showAlert('Erro', 'Não foi possível publicar. Tente novamente.', 'error');
         } finally {
             setLoading(false);
         }
@@ -174,6 +189,15 @@ export default function CreatePostScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }
