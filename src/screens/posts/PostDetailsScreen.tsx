@@ -1,0 +1,156 @@
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
+import { PostService } from '../../services/postService';
+import { Post } from '../../types';
+
+type ParamList = {
+    PostDetails: { postId: string };
+};
+
+export default function PostDetailsScreen() {
+    const route = useRoute<RouteProp<ParamList, 'PostDetails'>>();
+    const { postId } = route.params;
+    const [post, setPost] = useState<Post | null>(null);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
+    const navigation = useNavigation();
+
+    useEffect(() => {
+        loadPost();
+    }, [postId]);
+
+    // Refresh when focusing back (in case of edit)
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (post) loadPost();
+        });
+        return unsubscribe;
+    }, [navigation, post]);
+
+    async function loadPost() {
+        try {
+            const data = await PostService.getPost(postId);
+            setPost(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleDelete() {
+        Alert.alert(
+            'Excluir Post',
+            'Tem certeza que deseja excluir este post?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await PostService.deletePost(postId);
+                            Alert.alert('Sucesso', 'Post excluído.');
+                            navigation.goBack();
+                        } catch (error) {
+                            Alert.alert('Erro', 'Não foi possível excluir o post.');
+                        }
+                    }
+                }
+            ]
+        );
+    }
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#F97316" style={{ marginTop: 20 }} />;
+    }
+
+    if (!post) {
+        return (
+            <View style={styles.container}>
+                <Text>Post não encontrado.</Text>
+            </View>
+        );
+    }
+
+    const canEdit = user?.role === 'admin' || user?.role === 'teacher'; // Simplified check, ideally check author too if strict
+
+    return (
+        <ScrollView style={styles.container}>
+            <Text style={styles.title}>{post.title}</Text>
+            <Text style={styles.meta}>Por {post.author} em {new Date(post.createdAt).toLocaleDateString('pt-BR')}</Text>
+
+            <View style={styles.tags}>
+                {post.tags?.map((tag, i) => (
+                    <Text key={i} style={styles.tag}>#{tag}</Text>
+                ))}
+            </View>
+
+            <Text style={styles.content}>{post.content}</Text>
+        </ScrollView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        padding: 16,
+        backgroundColor: '#FFF',
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
+    meta: {
+        fontSize: 14,
+        color: '#888',
+        marginBottom: 16,
+    },
+    tags: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        flexWrap: 'wrap',
+    },
+    tag: {
+        color: '#F97316',
+        marginRight: 10,
+        fontWeight: '500',
+    },
+    content: {
+        fontSize: 16,
+        lineHeight: 24,
+        color: '#444',
+        marginBottom: 32,
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 20,
+        marginBottom: 40,
+        borderTopWidth: 1,
+        borderTopColor: '#EEE',
+        paddingTop: 20,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
+    editButton: {
+        backgroundColor: '#3B82F6',
+    },
+    deleteButton: {
+        backgroundColor: '#EF4444',
+    },
+    actionText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        marginLeft: 8,
+    },
+});
