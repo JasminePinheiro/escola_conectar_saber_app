@@ -2,11 +2,19 @@ import { PaginatedResponse, Post } from '../types';
 import api from './apiClient';
 
 export const PostService = {
-    getPosts: async (page: number = 1, limit: number = 10, search?: string): Promise<PaginatedResponse<Post>> => {
+    getPosts: async (page: number = 1, limit: number = 10, search?: string, category?: string): Promise<PaginatedResponse<Post>> => {
         let url = `/posts?page=${page}&limit=${limit}`;
-        if (search) {
-            url = `/posts/search?query=${search}&page=${page}&limit=${limit}`;
+        if (category) {
+            url += `&category=${encodeURIComponent(category)}`;
         }
+
+        if (search) {
+            url = `/posts/search?query=${encodeURIComponent(search)}&page=${page}&limit=${limit}`;
+            if (category) {
+                url += `&category=${encodeURIComponent(category)}`;
+            }
+        }
+
         const response = await api.get(url);
         return response.data;
     },

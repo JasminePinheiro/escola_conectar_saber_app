@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
     Atom,
     Beaker,
@@ -70,6 +70,7 @@ export default function PostListScreen() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [searchText, setSearchText] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('Tudo');
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [sortBy, setSortBy] = useState<'createdAt' | 'title'>('createdAt');
@@ -78,14 +79,26 @@ export default function PostListScreen() {
     const [activeHighlight, setActiveHighlight] = useState(0);
     const navigation = useNavigation<any>();
     const { user } = useAuth();
+    const isFirstRun = React.useRef(true);
+
+    useEffect(() => {
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
+        }
+        const handler = setTimeout(() => {
+            setSearch(searchText);
+        }, 500);
+
+        return () => clearTimeout(handler);
+    }, [searchText]);
 
     async function loadPosts() {
         try {
-            setLoading(true);
-            const query = selectedCategory === 'Tudo' ? search : `${search} ${selectedCategory}`.trim();
-            const data = await PostService.getPosts(1, 15, query);
+            if (posts.length === 0) setLoading(true);
+            const categoryParam = selectedCategory === 'Tudo' ? undefined : selectedCategory;
+            const data = await PostService.getPosts(1, 15, search, categoryParam);
 
-            // Client-side sorting as a fallback if needed, or just let backend handle it
             let sortedData = [...data.data];
             if (sortBy === 'title') {
                 sortedData.sort((a, b) => a.title.localeCompare(b.title));
@@ -104,9 +117,11 @@ export default function PostListScreen() {
         }
     }
 
-    useEffect(() => {
-        loadPosts();
-    }, [search, selectedCategory, sortBy, sortOrder]);
+    useFocusEffect(
+        useCallback(() => {
+            loadPosts();
+        }, [search, selectedCategory, sortBy, sortOrder])
+    );
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -245,8 +260,8 @@ export default function PostListScreen() {
                                     style={styles.searchInput}
                                     placeholder="Buscar posts..."
                                     placeholderTextColor="#999"
-                                    value={search}
-                                    onChangeText={setSearch}
+                                    value={searchText}
+                                    onChangeText={setSearchText}
                                 />
                             </View>
                             <TouchableOpacity
