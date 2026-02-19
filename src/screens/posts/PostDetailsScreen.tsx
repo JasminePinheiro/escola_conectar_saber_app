@@ -216,7 +216,7 @@ export default function PostDetailsScreen() {
                                         <Text style={styles.commentAuthor}>{comment.author}</Text>
                                         <Text style={styles.commentDate}>{new Date(comment.createdAt).toLocaleDateString('pt-BR')}</Text>
                                     </View>
-                                    {(user?.id === comment.authorId || user?.role === 'admin' || user?.role === 'teacher') && (
+                                    {(user?.id === comment.authorId || user?.role === 'admin') && (
                                         <View style={styles.commentActions}>
                                             {user?.id === comment.authorId && (
                                                 <TouchableOpacity
