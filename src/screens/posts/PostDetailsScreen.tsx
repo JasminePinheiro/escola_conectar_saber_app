@@ -95,9 +95,10 @@ export default function PostDetailsScreen() {
             const updatedPost = await PostService.addComment(postId, commentText);
             setPost(updatedPost);
             setCommentText('');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            showAlert('Erro', 'Não foi possível adicionar o comentário.', 'error');
+            const msg = error.response?.data?.message || 'Não foi possível adicionar o comentário.';
+            showAlert('Erro', msg, 'error');
         } finally {
             setSubmittingComment(false);
         }
@@ -112,9 +113,10 @@ export default function PostDetailsScreen() {
             setPost(updatedPost);
             setEditingCommentId(null);
             setEditingCommentText('');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            showAlert('Erro', 'Não foi possível atualizar o comentário.', 'error');
+            const msg = error.response?.data?.message || 'Não foi possível atualizar o comentário.';
+            showAlert('Erro', msg, 'error');
         } finally {
             setSubmittingComment(false);
         }
@@ -129,9 +131,10 @@ export default function PostDetailsScreen() {
                 try {
                     const updatedPost = await PostService.deleteComment(postId, commentId);
                     setPost(updatedPost);
-                } catch (error) {
+                } catch (error: any) {
                     console.error(error);
-                    showAlert('Erro', 'Não foi possível remover o comentário.', 'error');
+                    const msg = error.response?.data?.message || 'Não foi possível remover o comentário.';
+                    showAlert('Erro', msg, 'error');
                 }
             }
         );

@@ -67,6 +67,7 @@ export default function RegisterScreen() {
         } catch (error: any) {
             const msg = error.response?.data?.message || 'Não foi possível criar a conta. Tente novamente.';
             showAlert('Erro', msg, 'error');
+            console.log('Register failed:', msg);
         } finally {
             setLoading(false);
         }

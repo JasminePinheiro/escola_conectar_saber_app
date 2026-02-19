@@ -52,7 +52,8 @@ export default function LoginScreen() {
         } catch (error: any) {
             const msg = error.response?.data?.message || 'Login ou senha incorretos.';
             showAlert('Erro no login', msg, 'error');
-            console.error(error);
+            // Usamos log em vez de error para não aparecer o popup do Expo em desenvolvimento
+            console.log('Login failed:', msg);
         } finally {
             setIsSubmitting(false);
         }

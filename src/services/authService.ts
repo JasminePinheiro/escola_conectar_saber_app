@@ -20,7 +20,7 @@ export const AuthService = {
 
             return data;
         } catch (error) {
-            console.error('Erro no AuthService.login:', error);
+            console.log('Erro no AuthService.login:', error);
             throw error;
         }
     },
@@ -39,7 +39,7 @@ export const AuthService = {
 
             return data;
         } catch (error) {
-            console.error('Erro no AuthService.register:', error);
+            console.log('Erro no AuthService.register:', error);
             throw error;
         }
     },

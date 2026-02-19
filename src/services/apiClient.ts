@@ -38,13 +38,13 @@ api.interceptors.response.use(
         return response;
     },
     async (error) => {
-        // Handle 401 Unauthorized (invalid/expired token)
-        if (error.response && error.response.status === 401) {
-            console.warn('Sessão expirada ou token inválido. Limpando dados...');
+        const isAuthRoute = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
+
+        if (error.response && error.response.status === 401 && !isAuthRoute) {
+            console.log('Sessão expirada. Limpando dados...');
             await AsyncStorage.removeItem('@auth_token');
             await AsyncStorage.removeItem('@refresh_token');
             await AsyncStorage.removeItem('@user');
-            // Note: Idealmente você emitiria um evento ou usaria um callback para resetar o estado do AuthContext
         }
         return Promise.reject(error);
     }
