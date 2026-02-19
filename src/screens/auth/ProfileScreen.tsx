@@ -39,13 +39,11 @@ export default function ProfileScreen() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
 
-    // Password Reset Modal States
     const [isPassModalVisible, setIsPassModalVisible] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [passLoading, setPassLoading] = useState(false);
 
-    // Custom Alert State
     const [alert, setAlert] = useState<{
         visible: boolean;
         title: string;
@@ -212,7 +210,6 @@ export default function ProfileScreen() {
                 style={styles.content}
             >
                 <ScrollView showsVerticalScrollIndicator={false}>
-                    {/* Avatar Section */}
                     <View style={styles.avatarContainer}>
                         <View style={styles.avatarCircle}>
                             {avatarUrl ? (
@@ -251,7 +248,6 @@ export default function ProfileScreen() {
                         </Text>
                     </View>
 
-                    {/* Form Fields */}
                     <View style={styles.form}>
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Nome</Text>
@@ -294,7 +290,6 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Menu Options */}
                     <View style={styles.menu}>
                         <TouchableOpacity style={styles.menuItem} onPress={() => setIsPassModalVisible(true)}>
                             <View style={[styles.menuIcon, { backgroundColor: '#FFF4ED' }]}>
@@ -320,7 +315,6 @@ export default function ProfileScreen() {
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* Password Reset Modal */}
             <Modal
                 visible={isPassModalVisible}
                 transparent={true}

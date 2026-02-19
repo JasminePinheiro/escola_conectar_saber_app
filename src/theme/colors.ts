@@ -21,7 +21,6 @@ export const Colors = {
     gray700: '#374151',
     gray800: '#1F2937',
     gray900: '#111827',
-    // Specials for Profile
     orangeLight: '#FFF4ED',
     redLight: '#FEF2F2',
 };
