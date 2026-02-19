@@ -42,7 +42,6 @@ export default function PostDetailsScreen() {
         setAlert({ visible: true, title, message, type, onConfirm });
     };
 
-    // Hide navigator header
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false,
@@ -53,7 +52,6 @@ export default function PostDetailsScreen() {
         loadPost();
     }, [postId]);
 
-    // Refresh when focusing back (in case of edit)
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             if (post) loadPost();

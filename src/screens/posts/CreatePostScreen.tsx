@@ -40,7 +40,6 @@ export default function CreatePostScreen() {
         setAlert({ visible: true, title, message, type, onConfirm });
     };
 
-    // Hide navigator header to avoid double header
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false,
@@ -53,7 +52,6 @@ export default function CreatePostScreen() {
             return;
         }
 
-        // Convert comma-separated string to array
         const tags = tagsStr.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
 
         setLoading(true);

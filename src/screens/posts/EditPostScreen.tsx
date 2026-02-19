@@ -48,7 +48,6 @@ export default function EditPostScreen() {
         setAlert({ visible: true, title, message, type, onConfirm });
     };
 
-    // Hide navigator header to avoid double header
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false,
