@@ -22,6 +22,7 @@ export interface Post {
     scheduledAt?: Date;
     createdAt: Date;
     updatedAt: Date;
+    comments?: { author: string; content: string; createdAt: Date }[];
 }
 
 export interface AuthResponse {

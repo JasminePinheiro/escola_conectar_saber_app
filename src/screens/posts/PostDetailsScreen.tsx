@@ -1,7 +1,7 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/CustomAlert';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,8 @@ export default function PostDetailsScreen() {
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
     const navigation = useNavigation<any>();
+    const [commentText, setCommentText] = useState('');
+    const [submittingComment, setSubmittingComment] = useState(false);
 
     const [alert, setAlert] = useState<{
         visible: boolean;
@@ -83,6 +85,22 @@ export default function PostDetailsScreen() {
         );
     }
 
+    async function handleAddComment() {
+        if (!commentText.trim()) return;
+
+        setSubmittingComment(true);
+        try {
+            const updatedPost = await PostService.addComment(postId, commentText);
+            setPost(updatedPost);
+            setCommentText('');
+        } catch (error) {
+            console.error(error);
+            showAlert('Erro', 'Não foi possível adicionar o comentário.', 'error');
+        } finally {
+            setSubmittingComment(false);
+        }
+    }
+
     if (loading) {
         return <ActivityIndicator size="large" color="#F97316" style={{ marginTop: 20 }} />;
     }
@@ -126,6 +144,45 @@ export default function PostDetailsScreen() {
                 </View>
 
                 <Text style={styles.content}>{post.content}</Text>
+
+                <View style={styles.commentsSection}>
+                    <Text style={styles.commentsTitle}>Comentários ({post.comments?.length || 0})</Text>
+
+                    <View style={styles.commentInputContainer}>
+                        <TextInput
+                            style={styles.commentInput}
+                            placeholder="Escreva um comentário..."
+                            value={commentText}
+                            onChangeText={setCommentText}
+                            multiline
+                        />
+                        <TouchableOpacity
+                            style={[styles.commentButton, (!commentText.trim() || submittingComment) && styles.commentButtonDisabled]}
+                            onPress={handleAddComment}
+                            disabled={!commentText.trim() || submittingComment}
+                        >
+                            {submittingComment ? (
+                                <ActivityIndicator size="small" color="#FFF" />
+                            ) : (
+                                <Text style={styles.commentButtonText}>Publicar</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    {post.comments && post.comments.length > 0 ? (
+                        post.comments.map((comment, index) => (
+                            <View key={index} style={styles.commentCard}>
+                                <View style={styles.commentHeader}>
+                                    <Text style={styles.commentAuthor}>{comment.author}</Text>
+                                    <Text style={styles.commentDate}>{new Date(comment.createdAt).toLocaleDateString('pt-BR')}</Text>
+                                </View>
+                                <Text style={styles.commentContent}>{comment.content}</Text>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.noComments}>Nenhum comentário ainda. Seja o primeiro!</Text>
+                    )}
+                </View>
 
                 <CustomAlert
                     visible={alert.visible}
@@ -232,5 +289,75 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontWeight: 'bold',
         marginLeft: 8,
+    },
+    commentsSection: {
+        marginTop: 20,
+        marginBottom: 60,
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+        paddingTop: 20,
+    },
+    commentsTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 15,
+    },
+    commentInputContainer: {
+        marginBottom: 25,
+    },
+    commentInput: {
+        backgroundColor: '#F9FAFB',
+        borderRadius: 12,
+        padding: 15,
+        height: 80,
+        textAlignVertical: 'top',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        marginBottom: 10,
+    },
+    commentButton: {
+        backgroundColor: '#F97316',
+        borderRadius: 8,
+        paddingVertical: 10,
+        alignItems: 'center',
+    },
+    commentButtonDisabled: {
+        backgroundColor: '#CCC',
+    },
+    commentButtonText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+    },
+    commentCard: {
+        backgroundColor: '#F8F9FA',
+        padding: 15,
+        borderRadius: 12,
+        marginBottom: 10,
+    },
+    commentHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 5,
+    },
+    commentAuthor: {
+        fontWeight: 'bold',
+        color: '#F97316',
+        fontSize: 13,
+    },
+    commentDate: {
+        color: '#999',
+        fontSize: 11,
+    },
+    commentContent: {
+        color: '#444',
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    noComments: {
+        color: '#999',
+        textAlign: 'center',
+        fontStyle: 'italic',
+        marginTop: 10,
     },
 });

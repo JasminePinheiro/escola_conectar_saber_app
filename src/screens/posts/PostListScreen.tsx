@@ -36,6 +36,7 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../context/AuthContext';
 import { PostService } from '../../services/postService';
 import { Post } from '../../types';
 
@@ -76,6 +77,7 @@ export default function PostListScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [activeHighlight, setActiveHighlight] = useState(0);
     const navigation = useNavigation<any>();
+    const { user } = useAuth();
 
     async function loadPosts() {
         try {
@@ -363,9 +365,11 @@ export default function PostListScreen() {
                 </TouchableOpacity>
             </Modal>
 
-            <TouchableOpacity style={styles.fab} onPress={handleCreatePost}>
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
+            {user?.role !== 'student' && (
+                <TouchableOpacity style={styles.fab} onPress={handleCreatePost}>
+                    <Text style={styles.fabText}>+</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 }

@@ -33,5 +33,10 @@ export const PostService = {
 
     deletePost: async (id: string): Promise<void> => {
         await api.delete(`/posts/${id}`);
+    },
+
+    addComment: async (postId: string, content: string): Promise<Post> => {
+        const response = await api.post(`/posts/${postId}/comments`, { content });
+        return response.data;
     }
 };
