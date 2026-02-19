@@ -73,7 +73,9 @@ export default function EditPostScreen() {
                 published: status === 'published',
                 status: status as any
             });
-            showAlert('Sucesso', 'Postagem atualizada com sucesso!', 'success', () => navigation.goBack());
+            showAlert('Sucesso', 'Postagem atualizada com sucesso!', 'success', () => {
+                navigation.goBack();
+            });
         } catch (error) {
             console.error(error);
             showAlert('Erro', 'Não foi possível atualizar a postagem.', 'error');

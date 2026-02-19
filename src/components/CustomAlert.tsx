@@ -81,7 +81,10 @@ export default function CustomAlert({
                         ) : (
                             <TouchableOpacity
                                 style={[styles.button, styles.okButton]}
-                                onPress={onClose}
+                                onPress={() => {
+                                    onConfirm?.();
+                                    onClose();
+                                }}
                             >
                                 <Text style={styles.okButtonText}>OK</Text>
                             </TouchableOpacity>

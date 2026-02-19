@@ -67,7 +67,7 @@ export default function CreatePostScreen() {
                 status: status
             });
             showAlert('Sucesso', 'Postagem publicada com sucesso!', 'success', () => {
-                navigation.navigate('HomeStack');
+                navigation.goBack();
             });
         } catch (error) {
             console.error(error);
