@@ -3,15 +3,15 @@ import { ArrowLeft, Edit2, FileText, Plus, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     FlatList,
     RefreshControl,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { PostService } from '../../services/postService';
 import { Post } from '../../types';
 
@@ -21,6 +21,23 @@ export default function PostManagementScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation<any>();
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     const loadPosts = async () => {
         try {
             setLoading(true);
@@ -28,7 +45,7 @@ export default function PostManagementScreen() {
             setPosts(data.data);
         } catch (error) {
             console.error('Erro ao carregar posts:', error);
-            Alert.alert('Erro', 'Não foi possível carregar a lista de postagens.');
+            showAlert('Erro', 'Não foi possível carregar a lista de postagens.', 'error');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -48,24 +65,18 @@ export default function PostManagementScreen() {
     };
 
     const handleDelete = (id: string, title: string) => {
-        Alert.alert(
+        showAlert(
             'Excluir Postagem',
             `Tem certeza que deseja excluir "${title}"?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Excluir',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await PostService.deletePost(id);
-                            loadPosts();
-                        } catch (error) {
-                            Alert.alert('Erro', 'Não foi possível excluir o post.');
-                        }
-                    },
-                },
-            ]
+            'confirm',
+            async () => {
+                try {
+                    await PostService.deletePost(id);
+                    loadPosts();
+                } catch (error) {
+                    showAlert('Erro', 'Não foi possível excluir o post.', 'error');
+                }
+            }
         );
     };
 
@@ -146,6 +157,15 @@ export default function PostManagementScreen() {
             >
                 <Plus size={30} color="#FFF" />
             </TouchableOpacity>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }

@@ -3,7 +3,6 @@ import { ArrowLeft, Mail, Shield, User as UserIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomAlert from '../../components/CustomAlert';
 import { AuthService } from '../../services/authService';
 
 export default function UserFormScreen() {
@@ -26,6 +26,23 @@ export default function UserFormScreen() {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(isEditing);
 
+    const [alert, setAlert] = useState<{
+        visible: boolean;
+        title: string;
+        message: string;
+        type: 'info' | 'success' | 'error' | 'confirm';
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
+    const showAlert = (title: string, message: string, type: 'info' | 'success' | 'error' | 'confirm' = 'info', onConfirm?: () => void) => {
+        setAlert({ visible: true, title, message, type, onConfirm });
+    };
+
     useEffect(() => {
         if (isEditing) {
             loadUser();
@@ -39,8 +56,9 @@ export default function UserFormScreen() {
             setName(user.name);
             setEmail(user.email);
         } catch (error) {
-            Alert.alert('Erro', 'Não foi possível carregar os dados do usuário.');
-            navigation.goBack();
+            showAlert('Erro', 'Não foi possível carregar os dados do usuário.', 'error', () => {
+                navigation.goBack();
+            });
         } finally {
             setFetching(false);
         }
@@ -48,7 +66,7 @@ export default function UserFormScreen() {
 
     const handleSave = async () => {
         if (!name || !email || (!isEditing && !password)) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
+            showAlert('Erro', 'Por favor, preencha todos os campos obrigatórios.', 'error');
             return;
         }
 
@@ -56,15 +74,18 @@ export default function UserFormScreen() {
             setLoading(true);
             if (isEditing) {
                 await AuthService.updateUser(userId, { name, email });
-                Alert.alert('Sucesso', 'Dados atualizados com sucesso!');
+                showAlert('Sucesso', 'Dados atualizados com sucesso!', 'success', () => {
+                    navigation.goBack();
+                });
             } else {
                 await AuthService.register(name, email, password, role, false);
-                Alert.alert('Sucesso', `${role === 'teacher' ? 'Professor' : 'Estudante'} cadastrado com sucesso!`);
+                showAlert('Sucesso', `${role === 'teacher' ? 'Professor' : 'Estudante'} cadastrado com sucesso!`, 'success', () => {
+                    navigation.goBack();
+                });
             }
-            navigation.goBack();
         } catch (error: any) {
             const message = error.response?.data?.message || 'Erro ao salvar. Verifique se o e-mail já está em uso.';
-            Alert.alert('Erro', message);
+            showAlert('Erro', message, 'error');
         } finally {
             setLoading(false);
         }
@@ -158,6 +179,15 @@ export default function UserFormScreen() {
                     <Text style={styles.cancelButtonText}>Cancelar</Text>
                 </TouchableOpacity>
             </ScrollView>
+
+            <CustomAlert
+                visible={alert.visible}
+                title={alert.title}
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ ...alert, visible: false })}
+                onConfirm={alert.onConfirm}
+            />
         </View>
     );
 }
