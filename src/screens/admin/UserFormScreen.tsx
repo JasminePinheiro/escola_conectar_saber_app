@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -13,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/CustomAlert';
 import { AuthService } from '../../services/authService';
+import { styles } from './UserFormScreen.styles';
 
 export default function UserFormScreen() {
     const navigation = useNavigation<any>();
@@ -224,90 +224,4 @@ export default function UserFormScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFF',
-    },
-    header: {
-        backgroundColor: '#F97316',
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-    headerContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#FFF',
-        marginLeft: 8,
-    },
-    backButton: {
-        padding: 8,
-    },
-    form: {
-        padding: 24,
-    },
-    inputGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
-    },
-    inputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F3F4F6',
-        borderRadius: 12,
-        paddingHorizontal: 15,
-        height: 56,
-    },
-    input: {
-        flex: 1,
-        marginLeft: 10,
-        fontSize: 16,
-        color: '#333',
-    },
-    saveButton: {
-        backgroundColor: '#F97316',
-        borderRadius: 16,
-        height: 56,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20,
-        elevation: 4,
-        shadowColor: '#F97316',
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-    },
-    saveButtonDisabled: {
-        backgroundColor: '#CCC',
-    },
-    saveButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    cancelButton: {
-        height: 56,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-    },
-    cancelButtonText: {
-        color: '#666',
-        fontSize: 16,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
+
