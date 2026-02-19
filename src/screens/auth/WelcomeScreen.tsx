@@ -60,19 +60,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     illustrationContainer: {
-        flex: 2,
-        justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
+        marginBottom: 10,
     },
     illustration: {
         width: '100%',
         height: 280,
-        marginBottom: 20,
     },
     textContainer: {
-        flex: 1,
         alignItems: 'center',
+        marginBottom: 30,
     },
     welcomeText: {
         fontSize: 18,
@@ -88,10 +86,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     buttonContainer: {
-        flex: 1,
         width: '100%',
         justifyContent: 'flex-start',
-        paddingTop: 20,
     },
     loginButton: {
         backgroundColor: '#F97316',
